@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Modern Calculator</title>
+  <style>
+    :root {
+      --bg: #0f1220;
+      --panel: #171a2b;
+      --accent: #4f7cff;
+      --text: #e9ecf1;
+      --muted: #98a2b3;
+      --danger: #ff5c5c;
+      --ok: #26c281;
+      --shadow: 0 8px 24px rgba(0,0,0,.35);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      background: radial-gradient(1200px 600px at 80% -20%, #1e2240, transparent), var(--bg);
+      color: var(--text);
+      font: 16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      margin: 0;
+    }
+
+    .wrap {
+      min-height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .calc {
+      width: 100%;
+      max-width: 420px;
+      background: linear-gradient(180deg, #191c30, #13162a);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,.05);
+      overflow: hidden;
+    }
+
+    .top {
+      padding: 20px 20px 8px;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 600; color: var(--muted); letter-spacing: .5px;
+      text-transform: uppercase; font-size: 12px;
+    }
+    .brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+
+    .screen {
+      margin-top: 8px;
+      background: var(--panel);
+      border-radius: 14px;
+      padding: 16px;
+      display: grid;
+      gap: 6px;
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    .expr, .result {
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      outline: none;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      caret-color: var(--accent);
+    }
+    .expr {
+      font-size: 20px;
+      opacity: .9;
+    }
+    .result {
+      font-size: 36px;
+      text-align: right;
+      font-weight: 700;
+    }
+    .sub {
+      display: flex; gap: 8px; justify-content: space-between; align-items: center;
+    }
+    .sub small { color: var(--muted); }
+
+    .controls {
+      padding: 12px 20px 20px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    button.key {
+      appearance: none; border: 0;
+      padding: 16px 12px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #1d2140, #141832);
+      color: var(--text);
+      font-weight: 600;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+      transition: transform .04s ease, filter .2s ease, background .2s ease;
+      user-select: none;
+    }
+    button.key:hover { filter: brightness(1.08); }
+    button.key:active { transform: translateY(1px) scale(.99); }
+    button.key:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    .op { color: #a7b5ff; }
+    .accent { background: linear-gradient(180deg, #466bff, #2f49c9); }
+    .equal { background: linear-gradient(180deg, #27cc94, #1ea87a); }
+    .danger { background: linear-gradient(180deg, #ff6a6a, #d94b4b); }
+    .wide { grid-column: span 2; }
+    .speak { background: linear-gradient(180deg, #6b7dff, #4b5cd9); }
+
+    @media (max-width: 380px) {
+      .result { font-size: 30px; }
+      .expr { font-size: 18px; }
+      button.key { padding: 14px 10px; font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="calc" role="application" aria-label="Calculator">
+      <div class="top">
+        <div class="brand"><span class="dot" aria-hidden="true"></span>Neo Calculator </div>
+        <div class="screen" aria-live="polite">
+          <input id="expr" class="expr" type="text" inputmode="decimal" autocomplete="off"
+                 aria-label="Expression" placeholder=" Number" />
+          <output id="result" class="result" aria-label="Result">0</output>
+          <div class="sub">
+            <div>
+              <button class="key speak" id="speak" title="Read result aloud" aria-label="Read result">🔊 Read</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls" aria-label="Calculator keypad">
+        <div class="row">
+          <button class="key danger" data-key="AC" aria-label="All clear">AC</button>
+          <button class="key" data-key="DEL" aria-label="Delete">DEL</button>
+          <button class="key op" data-key="%" aria-label="Percent">%</button>
+          <button class="key op" data-key="÷" aria-label="Divide">÷</button>
+        </div>
+        <div class="row">
+          <button class="key" data-key="7">7</button>
+          <button class="key" data-key="8">8</button>
+          <button class="key" data-key="9">9</button>
+          <button class="key op" data-key="×" aria-label="Multiply">×</button>
+        </div>
+        <div class="row">
+          <button class="key" data-key="4">4</button>
+          <button class="key" data-key="5">5</button>
+          <button class="key" data-key="6">6</button>
+          <button class="key op" data-key="−" aria-label="Minus">−</button>
+        </div>
+        <div class="row">
+          <button class="key" data-key="1">1</button>
+          <button class="key" data-key="2">2</button>
+          <button class="key" data-key="3">3</button>
+          <button class="key op" data-key="+">+</button>
+        </div>
+        <div class="row">
+          <button class="key" data-key="(">(</button>
+          <button class="key" data-key=")">)</button>
+          <button class="key" data-key="0">0</button>
+          <button class="key" data-key="." aria-label="Decimal point">.</button>
+        </div>
+        <div class="row">
+          <button class="key wide accent" data-key="+/−" aria-label="Toggle sign">+/−</button>
+          <button class="key wide equal" data-key="=" aria-label="Equals">=</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const exprEl = document.getElementById('expr');
+    const resultEl = document.getElementById('result');
+    const speakBtn = document.getElementById('speak');
+
+    const keys = document.querySelectorAll('button.key[data-key]');
+    keys.forEach(btn => btn.addEventListener('click', () => press(btn.dataset.key)));
+
+    // Map pretty symbols to JS operators
+    const normalize = s => s
+      .replace(/×/g, '*')
+      .replace(/÷/g, '/')
+      .replace(/−/g, '-');
+
+    // Lightweight, guarded evaluator (numbers, + - * / % . ( ))
+    function safeEval(input) {
+      const s = normalize(input).trim();
+      if (!s) return '';
+      // Only allow digits, operators, parentheses, decimal points, and spaces
+      if (!/^[\d+\-*/%.()\s]+$/.test(s)) return 'Error';
+      try {
+        // Handle percentage like 50% -> 0.5 ; 200+10% -> 200+(200*0.1)
+        const pct = s.replace(/(\d+(?:\.\d+)?)%/g, '($1/100)');
+        // eslint-disable-next-line no-new-func
+        let val = Function('return (' + pct + ')')();
+        if (!isFinite(val)) return 'Error';
+        // Round to 12 significant digits to reduce FP noise
+        const pretty = Number(val.toPrecision(12)).toString();
+        return pretty;
+      } catch {
+        return 'Error';
+      }
+    }
+
+    function update() {
+      const out = safeEval(exprEl.value);
+      resultEl.textContent = out === '' ? '0' : out;
+    }
+
+    function press(key) {
+      if (key === 'AC') {
+        exprEl.value = '';
+        update();
+        exprEl.focus();
+        return;
+      }
+      if (key === 'DEL') {
+        exprEl.value = exprEl.value.slice(0, -1);
+        update();
+        exprEl.focus();
+        return;
+      }
+      if (key === '=') {
+        const out = safeEval(exprEl.value);
+        if (out !== 'Error' && out !== '') exprEl.value = out;
+        update();
+        return;
+      }
+      if (key === '+/−') {
+        // Toggle sign of the last number token
+        exprEl.value = toggleSign(exprEl.value);
+        update();
+        return;
+      }
+      exprEl.value += key;
+      update();
+    }
+
+    function toggleSign(s) {
+      // Find last number (possibly with decimal or %) and wrap with -( )
+      const m = /(.*?)(\(?-?\d+(?:\.\d+)?%?\)?)\s*$/.exec(s);
+      if (!m) return s;
+      const head = m[1], num = m[2];
+      // If already negative pattern, remove minus
+      if (/^\(?-/.test(num)) {
+        return head + num.replace(/^-/, '').replace(/^\(-(.+)\)$/, '$1');
+      } else {
+        // Add a minus; if complex token, parenthesize
+        return head + (/\)$/.test(num) ? `-(${num})` : `-(${num})`);
+      }
+    }
+
+    // Keyboard support
+    const keyMap = {
+      '/': '÷', '*': '×', '-': '−', '+': '+', '%': '%',
+      '(': '(', ')': ')', '.': '.', 'Enter': '=', 'Backspace': 'DEL'
+    };
+    window.addEventListener('keydown', (e) => {
+      const k = e.key;
+      if (/\d/.test(k)) { press(k); e.preventDefault(); return; }
+      if (keyMap[k]) { press(keyMap[k]); e.preventDefault(); return; }
+      if (k === 'Escape') { press('AC'); e.preventDefault(); return; }
+    });
+
+    // Speak result
+    function speak(text) {
+      if (!('speechSynthesis' in window)) return alert('Speech not supported in this browser.');
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(String(text));
+      u.lang = 'en-IN'; // Indian English; adjust as you like
+      u.rate = 1; u.pitch = 1;
+      speechSynthesis.speak(u);
+    }
+    speakBtn.addEventListener('click', () => {
+      const toRead = resultEl.textContent || '0';
+      speak(toRead);
+    });
+
+    // Live preview while typing
+    exprEl.addEventListener('input', update);
+    // Initialize
+    update();
+  </script>
+</body>
+</html>
